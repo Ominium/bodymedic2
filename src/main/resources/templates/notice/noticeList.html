@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>공지 리스트</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/table.css"/>
+    <link rel="stylesheet" href="/css/style.css"/>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        let session_user_id = [[${session.SS_USER_ID}]];
+        // Controller에서 받은 세션에 저장된 값
+
+        /*]]>*/
+    </script>
+    <script type="text/javascript">
+
+        //상세보기 이동
+        function doDetail(seq) {
+            location.href = "/notice/noticeInfo?nSeq=" + seq;
+        }
+
+    </script>
+    <!-- Channel Plugin Scripts -->
+    <script>
+        (function() {
+            var w = window;
+            if (w.ChannelIO) {
+                return (window.console.error || window.console.log || function(){})('ChannelIO script included twice.');
+            }
+            var ch = function() {
+                ch.c(arguments);
+            };
+            ch.q = [];
+            ch.c = function(args) {
+                ch.q.push(args);
+            };
+            w.ChannelIO = ch;
+            function l() {
+                if (w.ChannelIOInitialized) {
+                    return;
+                }
+                w.ChannelIOInitialized = true;
+                var s = document.createElement('script');
+                s.type = 'text/javascript';
+                s.async = true;
+                s.src = 'https://cdn.channel.io/plugin/ch-plugin-web.js';
+                s.charset = 'UTF-8';
+                var x = document.getElementsByTagName('script')[0];
+                x.parentNode.insertBefore(s, x);
+            }
+            if (document.readyState === 'complete') {
+                l();
+            } else if (window.attachEvent) {
+                window.attachEvent('onload', l);
+            } else {
+                window.addEventListener('DOMContentLoaded', l, false);
+                window.addEventListener('load', l, false);
+            }
+        })();
+        ChannelIO('boot', {
+            "pluginKey": "235cd768-4afe-4ebc-bcd1-e7448b26e366"
+        });
+    </script>
+    <!-- End Channel Plugin -->
+
+</head>
+<body>
+<nav class="navbar">
+
+    <div class="navbar__logo">
+        <i class="fas fa-blog"></i>
+        <a href="/main/mainPage">Body Medic</a>
+    </div>
+
+    <ul class="navbar__menu">
+        <li><a href="/main/mainPage">Main</a></li>
+        <li><a href="/main/mainDiseaseSearch">Search</a></li>
+        <li><a href="/notice/noticeList">Notice</a></li>
+        <li><a href="/chat/chatGpt35">AI Search</a></li>>
+        <li><a href="/user/logOut"  th:if="${session.SS_USER_ID!=null}">LogOut</a></li>>
+        <li><a href="/myPage/myPage"  th:if="${session.SS_USER_ID!=null}">My Page</a></li>>
+        <li><a href="/user/loginPage"  th:if="${session.SS_USER_ID==null}">Login</a></li>>
+        <li><a href="/user/signForm" th:if="${session.SS_USER_ID==null}">Sign</a></li>>
+    </ul>
+
+
+</nav>
+
+<hr/>
+<br/>
+<div class="divTable minimalistBlack">
+    <div class="divTableHeading">
+        <div class="divTableRow">
+            <div class="divTableHead">순번</div>
+            <div class="divTableHead">제목</div>
+            <div class="divTableHead">조회수</div>
+            <div class="divTableHead">등록자</div>
+            <div class="divTableHead">등록일</div>
+        </div>
+    </div>
+    <div class="divTableBody">
+        <div class="divTableRow" th:each="dto: ${rList}">
+            <div class="divTableCell" th:if="${dto.noticeYn=='Y'}" th:text="공지사항"></div>
+            <div class="divTableCell" th:unless="${dto.noticeYn=='Y'}" th:text="${dto.noticeSeq}"></div>
+            <div class="divTableCell" th:text="${dto.title}" th:onclick="doDetail([[${dto.noticeSeq}]])"></div>
+            <div class="divTableCell" th:text="${dto.readCnt}"></div>
+            <div class="divTableCell" th:text="${dto.userName}"></div>
+            <div class="divTableCell" th:text="${dto.regDt}"></div>
+        </div>
+    </div>
+
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="Page navigation example">
+                <div style="text-align: center" class="page-link" th:with="start=1, end=${endPageNum}">
+                    <button th:if="${select > 1}" th:onclick="|location.href='@{/notice/noticeList(num=1)}'|" th:text="'<<'">
+                    </button>
+                    <button th:if="${select > 1}" th:onclick="|location.href='@{/notice/noticeList(num=${select - 1})}'|" th:text="'<'">
+                    </button>
+                    <button th:each="page: ${#numbers.sequence(start, end)}" th:text="${page}" th:onclick="|location.href='@{/notice/noticeList(num=${page})}'|">
+                    </button>
+                    <button th:if="${select < end}" th:onclick="|location.href='@{/notice/noticeList(num=${select+1})}'|" th:text="'>'">
+                    </button>
+                    <button th:if="${select < end}"  th:onclick="|location.href='@{/notice/noticeList(num=${end})}'|" th:text="'>>'">
+                    </button>
+                </div>
+            </nav>
+        </div>
+</div>
+</div>
+<a href="/notice/noticeReg" th:if="${session.SS_USER_ID.equals('admin')}">글쓰기</a>
+</body>
+</html>

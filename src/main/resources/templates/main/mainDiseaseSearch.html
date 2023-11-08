@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>약, 증상 검색</title>
+    <style>
+        .label {margin-bottom: 96px;}
+        .label * {display: inline-block;vertical-align: top;}
+        .label .left {background: url("https://t1.daumcdn.net/localimg/localimages/07/2011/map/storeview/tip_l.png") no-repeat;display: inline-block;height: 24px;overflow: hidden;vertical-align: top;width: 7px;}
+        .label .center {background: url(https://t1.daumcdn.net/localimg/localimages/07/2011/map/storeview/tip_bg.png) repeat-x;display: inline-block;height: 24px;font-size: 12px;line-height: 24px;}
+        .label .right {background: url("https://t1.daumcdn.net/localimg/localimages/07/2011/map/storeview/tip_r.png") -1px 0  no-repeat;display: inline-block;height: 24px;overflow: hidden;width: 6px;}
+    </style>
+
+    <script type="text/javascript" src="/js/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/table.css"/>
+    <link rel="stylesheet" href="/css/style.css"/>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const session_user_id = [[${session.SS_USER_ID}]]; // Controller에서 받은 세션에 저장된 값
+        const fav = [[${fav}]];
+        /*]]>*/
+    </script>
+    <!-- Channel Plugin Scripts -->
+    <script>
+        (function() {
+            var w = window;
+            if (w.ChannelIO) {
+                return (window.console.error || window.console.log || function(){})('ChannelIO script included twice.');
+            }
+            var ch = function() {
+                ch.c(arguments);
+            };
+            ch.q = [];
+            ch.c = function(args) {
+                ch.q.push(args);
+            };
+            w.ChannelIO = ch;
+            function l() {
+                if (w.ChannelIOInitialized) {
+                    return;
+                }
+                w.ChannelIOInitialized = true;
+                var s = document.createElement('script');
+                s.type = 'text/javascript';
+                s.async = true;
+                s.src = 'https://cdn.channel.io/plugin/ch-plugin-web.js';
+                s.charset = 'UTF-8';
+                var x = document.getElementsByTagName('script')[0];
+                x.parentNode.insertBefore(s, x);
+            }
+            if (document.readyState === 'complete') {
+                l();
+            } else if (window.attachEvent) {
+                window.attachEvent('onload', l);
+            } else {
+                window.addEventListener('DOMContentLoaded', l, false);
+                window.addEventListener('load', l, false);
+            }
+        })();
+        ChannelIO('boot', {
+            "pluginKey": "235cd768-4afe-4ebc-bcd1-e7448b26e366"
+        });
+    </script>
+    <!-- End Channel Plugin -->
+    <script type="text/javascript">
+        let index, efcyQesitm;
+
+            // HTML로딩이 완료되고, 실행됨
+            $(document).ready(function () {
+                if(fav !==null){
+
+                    $.ajax({ // Ajax 호출
+                        url: "/main/drugapi",
+                        type: "get", // 전송방식은 Post
+                        dataType: "json", // 전송 결과는 JSON으로 받기
+                        data: {index : "itemName" ,efcyQesitm:fav},
+                        success: function (json) { //
+
+
+                            let html = "<div id='comment-list' class='divTable' >";
+                            html +="<div class='divTableHeading'  >"
+                            html +="<div class='divTableRow'  >"
+                            html += "<div class='divTableHead'>회사명</div>";
+                            html += "<div class='divTableHead '>상품명</div>";
+                            html += "<div class='divTableHead'>주의사항</div>";
+                            html += "<div class='divTableHead'>효능</div>";
+                            html += "<div class='divTableHead '>보관방법</div>";
+                            html += "<div class='divTableHead '>즐겨찾기 추가</div>";
+                            html +="</div>";
+                            html +="</div>";
+                            let pageNo = json.response.body.pageNo;
+                            let count = json.response.body.totalCount;
+                            let list = json.response.body.items.item;
+                            let list2 = json.response.body.items;
+                            if(count === 1){
+                                list = list2;
+                            }
+                            $.each(list, (id, obj) => {
+
+                                let drug = obj;
+
+                                let entpName = drug.entpName;
+                                let itemName = drug.itemName;
+                                let atpnQesitm = drug.atpnQesitm;
+
+                                let efcyQesitm = drug.efcyQesitm;
+                                let depositMethodQesitm = drug.depositMethodQesitm;
+                                html += "<div class='divTableBody'>";
+                                html += "<div class='divTableRow'>";
+                                html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + entpName + "</div>";
+                                html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + itemName + "</div>";
+                                html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + atpnQesitm + "</div>";
+                                html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + efcyQesitm + "</div>";
+                                html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + depositMethodQesitm + "</div>";
+                                html += "<button class='divTableCell insertFav btn btn-outline-primary' value='"+itemName+"' >즐겨찾기 추가</button>"
+                                html += "</div>";
+                                html += "</div>";
+                            })
+                            let pagehtml = "<div>";
+                            for (let i = 1; i < (count / 10) + 1; i++) {
+                                pagehtml += "<button class='page btn btn-secondary' type ='button' value='" + i + "'>" + i + "</button>" + "&nbsp";
+                            }
+                            pagehtml += "</div>";
+                            $("#apiresult").html(html);
+                            $("#paging").html(pagehtml);
+                            $(".page").click(clickvalue);
+                            $(".insertFav").click(clickvalue2)
+                        }
+                    })
+                }
+
+
+
+                // 버튼 클릭했을때, 발생되는 이벤트 생성함(onclick 이벤트와 동일함)
+                $("#btnSend").on("click", function () {
+                    index = $("select[name=index]").val();
+                    efcyQesitm = $('input[name=efcyQesitm]').val();
+
+                    console.log(index);
+                    console.log(efcyQesitm);
+                    $.ajax({ // Ajax 호출
+                        url: "/main/drugapi",
+                        type: "get", // 전송방식은 Post
+                        dataType: "json", // 전송 결과는 JSON으로 받기
+                        data: $("#f").serialize(),
+                        success: function (json) { //
+
+
+                            let html = "<div id='comment-list' class='divTable' >";
+                            html +="<div class='divTableHeading'  >"
+                            html +="<div class='divTableRow'  >"
+                            html += "<div class='divTableHead'>회사명</div>";
+                            html += "<div class='divTableHead '>상품명</div>";
+                            html += "<div class='divTableHead'>주의사항</div>";
+                            html += "<div class='divTableHead'>효능</div>";
+                            html += "<div class='divTableHead '>보관방법</div>";
+                            html += "<div class='divTableHead '>즐겨찾기 추가</div>";
+                            html +="</div>";
+                            html +="</div>";
+                            let pageNo = json.response.body.pageNo;
+                            let count = json.response.body.totalCount;
+                            let list = json.response.body.items.item;
+                            let list2 = json.response.body.items;
+                            if(count === 1){
+                                list = list2;
+                            }
+                            $.each(list, (id, obj) => {
+
+                                let drug = obj;
+
+                                let entpName = drug.entpName;
+                                let itemName = drug.itemName;
+                                let atpnQesitm = drug.atpnQesitm;
+
+                                let efcyQesitm = drug.efcyQesitm;
+                                let depositMethodQesitm = drug.depositMethodQesitm;
+                                html += "<div class='divTableBody'>";
+                                html += "<div class='divTableRow'>";
+                                html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + entpName + "</div>";
+                                html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + itemName + "</div>";
+                                html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + atpnQesitm + "</div>";
+                                html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + efcyQesitm + "</div>";
+                                html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + depositMethodQesitm + "</div>";
+                                html += "<button class='divTableCell insertFav btn btn-outline-primary' value='"+itemName+"' >즐겨찾기 추가</button>"
+                                html += "</div>";
+                                html += "</div>";
+                            })
+                            let pagehtml = "<div>";
+                            for (let i = 1; i < (count / 10) + 1; i++) {
+                                pagehtml += "<button class='page btn btn-secondary' type ='button' value='" + i + "'>" + i + "</button>" + "&nbsp";
+                            }
+                            pagehtml += "</div>";
+                            $("#apiresult").html(html);
+                            $("#paging").html(pagehtml);
+                            $(".page").click(clickvalue);
+                            $(".insertFav").click(clickvalue2)
+                        }
+                    })
+                })
+            })
+        function clickvalue(){
+            let value = this.value;
+            clickpage(value);
+        }
+        function clickvalue2(){
+            let value = this.value;
+            insertFav(value);
+        } function insertFav(value){
+            console.log(session_user_id);
+            console.log(value);
+            if(session_user_id === "" ||session_user_id ==null){
+                alert("로그인 후 이용 바랍니다.");
+            }else{
+                $.ajax({
+                    url: "/myPage/insertFav",
+                    type: "post", // 전송방식은 Post
+                    dataType: "text", // 전송 결과는 JSON으로 받기
+                    data:{user_id:session_user_id,favorite:value},
+                    success: function (text) { //
+                        alert(text);
+                    },
+                    error:function (text){
+                        alert(text)
+                    }
+                })
+            }
+
+        }
+            function clickpage(value) {
+                console.log(value);
+                $.ajax({ // Ajax 호출
+                    url: "/main/drugpage",
+                    type: "get", // 전송방식은 Post
+                    dataType: "json", // 전송 결과는 JSON으로 받기
+                    data: {index: index, efcyQesitm: efcyQesitm, num: value},
+                    success: function (json) { //
+
+                        let html = "<div id='comment-list' class='divTable' >";
+
+                        html +="<div class='divTableHeading'  >"
+                        html +="<div class='divTableRow'  >"
+                        html += "<div class='divTableHead'>회사명</div>";
+                        html += "<div class='divTableHead '>상품명</div>";
+                        html += "<div class='divTableHead'>주의사항</div>";
+                        html += "<div class='divTableHead'>효능</div>";
+                        html += "<div class='divTableHead '>보관방법</div>";
+                        html += "<div class='divTableHead '>즐겨찾기 추가</div>";
+                        html +="</div>";
+                        html +="</div>";
+                        console.log(json);
+                        let pageNo = json.response.body.pageNo;
+                        let count = json.response.body.totalCount;
+                        const list = json.response.body.items.item;
+                        console.log(count);
+                        $.each(list, (id, obj) => {
+
+                            let drug = obj;
+
+                            let entpName = drug.entpName;
+                            let itemName = drug.itemName;
+                            let atpnQesitm = drug.atpnQesitm;
+
+                            let efcyQesitm = drug.efcyQesitm;
+                            let depositMethodQesitm = drug.depositMethodQesitm;
+                            html += "<div class='divTableBody'>";
+                            html += "<div class='divTableRow'>";
+                            html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + entpName + "</div>";
+                            html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + itemName + "</div>";
+                            html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + atpnQesitm + "</div>";
+                            html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + efcyQesitm + "</div>";
+                            html += "<div class='divTableCell fw-bold mb-0 me-1 user_id'>" + depositMethodQesitm + "</div>";
+                            html += "<button class='divTableCell insertFav btn btn-outline-primary' value='"+itemName+"' >즐겨찾기 추가</button>"
+                            html += "</div>";
+                            html += "</div>";
+                        })
+                        html +="</div>"
+                        let pagehtml = "<div>";
+                        for (let i = 1; i < (count / 10) + 1; i++) {
+                            pagehtml += "<button class='page' type ='button' value='" + i + "'>" + i + "</button>" + "&nbsp";
+                        }
+                        pagehtml += "</div>";
+                        $("#apiresult").html(html);
+                        $("#paging").html(pagehtml);
+                        $(".page").click(clickvalue);
+                    }, error: function () {
+                        console.log("실패하셨습니다");
+                    }
+
+
+                })
+
+            }
+
+
+
+
+    </script>
+</head>
+<body>
+<nav class="navbar">
+
+    <div class="navbar__logo">
+        <i class="fas fa-blog"></i>
+        <a href="/main/mainPage">Body Medic</a>
+    </div>
+
+    <ul class="navbar__menu">
+        <li><a href="/main/mainPage">Main</a></li>
+        <li><a href="/main/mainDiseaseSearch">Search</a></li>
+        <li><a href="/notice/noticeList">Notice</a></li>
+        <li><a href="/chat/chatGpt35">AI Search</a></li>>
+        <li><a href="/user/logOut"  th:if="${session.SS_USER_ID!=null}">LogOut</a></li>>
+        <li><a href="/myPage/myPage"  th:if="${session.SS_USER_ID!=null}">My Page</a></li>>
+        <li><a href="/user/loginPage"  th:if="${session.SS_USER_ID==null}">Login</a></li>>
+        <li><a href="/user/signForm" th:if="${session.SS_USER_ID==null}">Sign</a></li>>
+    </ul>
+
+
+</nav>
+
+
+<br/><br/>
+<form name="f" id="f">
+    <div class="divTable minimalistBlack">
+        <div class="divTableBody">
+            <div class="divTableRow">
+                <label>
+                    <select name="index" size = "1">
+                         <option value="itemName">약 이름</option>
+                         <option value="efcyQesitm">효능</option>
+                     </select>
+                </label>
+                <div class="divTableCell" style="width: 70%"><input type="text" name="efcyQesitm" style="width: 90%"></div>
+                <div>
+                    <button id="btnSend" type="button">검색</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>
+<br/>
+<br/>
+<h2>약국 위치</h2>
+<div id="map" style="width:500px;height:400px;"></div>
+<br/>
+<br/>
+
+
+
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=38ea2f6a8379e4f43ece2bc4545a4ddf"></script>
+<script>
+
+    function PosMap(){
+        $.ajax({ // Ajax 호출
+            url: "/main/disapi",
+            type: "get", // 전송방식은 Post
+            dataType: "json", // 전송 결과는 JSON으로 받기
+            success: function (json) { //
+                let xPoses = [];
+                let yPoses = [];
+                let title = [];
+                let lat,lon;
+                console.log(json);
+                const list = json.response.body.items.item
+                for(let obj of list){
+                    xPoses.push(obj.XPos);
+                    yPoses.push(obj.YPos);
+                    title.push(obj.yadmNm);
+                }
+                var mapContainer = document.getElementById('map'), // 지도를 표시할 div
+                    mapOption = {
+                        center: new kakao.maps.LatLng(37.2461191
+                            , 127.055503
+                        ), // 지도의 중심좌표
+                        level: 3 // 지도의 확대 레벨
+                    };
+                if (navigator.geolocation) {
+                    // GeoLocation을 이용해서 접속 위치를 얻어옵니다
+                    navigator.geolocation.getCurrentPosition(function(position) {
+
+                        lat = position.coords.latitude; // 위도
+                        lon = position.coords.longitude; // 경도
+
+                        var locPosition = new kakao.maps.LatLng(lat, lon), // 마커가 표시될 위치를 geolocation으로 얻어온 좌표로 생성합니다
+                            message = '<div style="padding:5px;">여기에 계신가요?!</div>'; // 인포윈도우에 표시될 내용입니다
+
+                        // 마커와 인포윈도우를 표시합니다
+                        displayMarker(locPosition, message);
+
+                    });
+
+                } else { // HTML5의 GeoLocation을 사용할 수 없을때 마커 표시 위치와 인포윈도우 내용을 설정합니다
+
+                    var locPosition = new kakao.maps.LatLng(37.2461191
+                            , 127.055503),
+                        message = 'geolocation을 사용할수 없어요..'
+
+                    displayMarker(locPosition, message);
+                }
+                var imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png";
+                var map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
+                function getDistanceFromLatLonInKm(lat1,lng1,lat2,lng2) {
+
+                    function deg2rad(deg) {
+                        return deg * (Math.PI/180)
+                    }
+
+                    var R = 6371; // Radius of the earth in km
+                    var dLat = deg2rad(lat2-lat1);  // deg2rad below
+                    var dLon = deg2rad(lng2-lng1);
+                    var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);
+                    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                    var d = R * c; // Distance in km
+
+                    return d.toFixed(2) + "km";
+                }
+                function displayMarker(locPosition, message) {
+
+                    // 마커를 생성합니다
+                    var marker2 = new kakao.maps.Marker({
+                        map: map,
+                        position: locPosition
+                    });
+
+                    var iwContent = message, // 인포윈도우에 표시할 내용
+                        iwRemoveable = true;
+
+                    // 인포윈도우를 생성합니다
+                    var infowindow = new kakao.maps.InfoWindow({
+                        content : iwContent,
+                        removable : iwRemoveable
+                    });
+
+                    // 인포윈도우를 마커위에 표시합니다
+                    infowindow.open(map, marker2);
+
+                    // 지도 중심좌표를 접속위치로 변경합니다
+                    map.setCenter(locPosition);
+
+                    return locPosition;
+                }
+
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var imageSize = new kakao.maps.Size(24, 35);
+                    // 마커 이미지를 생성합니다
+                    var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+                    lat = position.coords.latitude; // 위도
+                    lon = position.coords.longitude; // 경도
+                    for (var i = 0; i < xPoses.length; i++) {
+                        var locPosition = new kakao.maps.LatLng(lat, lon), // 마커가 표시될 위치를 geolocation으로 얻어온 좌표로 생성합니다
+                            message = '<div class ="label"><span class="left"></span><span class="center">'+title[i]+'&nbsp&nbsp'+getDistanceFromLatLonInKm(yPoses[i], xPoses[i], lat, lon)+'</span><span class="right"></span></div>'; // 인포윈도우에 표시될 내용입니다
+
+                        var marker = new kakao.maps.Marker({
+                            map: map, // 마커를 표시할 지도
+                            position: new kakao.maps.LatLng(yPoses[i],xPoses[i]), // 마커를 표시할 위치
+                            title :  title[i], // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+                            image : markerImage // 마커 이미지
+                        });
+                        // 마커와 인포윈도우를 표시합니다
+                        var customOverlay = new kakao.maps.CustomOverlay({
+                            position: new kakao.maps.LatLng(yPoses[i],xPoses[i]),
+                            content: message
+                        });
+                        customOverlay.setMap(map);
+                    }
+                    // 인포윈도우를 마커위에 표시합니다
+
+                })
+            },error:function () {
+                console.log("실패하셨습니다");
+            }
+        })
+    }
+    PosMap();
+
+
+    // 마커가 지도 위에 표시되도록 설정합니다
+
+
+    // 아래 코드는 지도 위의 마커를 제거하는 코드입니다
+    // marker.setMap(null);
+</script>
+<div class="divTable minimalistBlack">
+    <div class="divTableHeading">
+        <div class="divTableRow">
+            <div class="divTableHead"> 검색 결과 :</div>
+        </div>
+    </div>
+    <div id="apiresult">
+
+    </div>
+    <div class="divTableBody" id="paging">
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인 화면</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css"/>
+    <link rel="stylesheet" href="/css/table.css">
+    <script type="text/javascript">
+
+
+        //로그인을 위한 입력정보의 유효성 체크하기
+        function doLoginUserCheck(f) {
+
+            if (f.user_id.value === "") {
+                alert("아이디를 입력하세요.");
+                f.user_id.focus();
+                return false;
+            }
+
+            if (f.password.value === "") {
+                alert("비밀번호를 입력하세요.");
+                f.password.focus();
+                return false;
+            }
+
+        }
+    </script>
+</head>
+<body>
+<nav class="navbar">
+
+    <div class="navbar__logo">
+        <i class="fas fa-blog"></i>
+        <a href="/main/mainPage">Body Medic</a>
+    </div>
+
+    <ul class="navbar__menu">
+        <li><a href="/main/mainPage">Main</a></li>
+        <li><a href="/main/mainDiseaseSearch">Search</a></li>
+        <li><a href="/notice/noticeList">Notice</a></li>
+        <li><a href="/chat/chatGpt35">AI Search</a></li>>
+    </ul>
+
+
+</nav>
+<br/>
+<form name="f" method="post" action="/user/getUserLoginCheck" onsubmit="return doLoginUserCheck(this);">
+    <div class="container-fluid">
+        <div class="container">
+            <div class="row">
+
+                <div class="col-md-4">
+                    <a href="/main/mainPage" style="text-decoration: none"> <h1 style="text-align: center" >"body medic" <span class="badge bg-secondary">"로그인"</span></h1></a>
+
+                </div>
+                <div class="col-md-4">
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                </div>
+                <div class="col-md-4">
+                    <div class="form-floating mb-3">
+                        <input type="text" name="user_id" class="form-control" id="floatinguser_id" placeholder="user_id">
+                        <label for="floatinguser_id">"ID"를 입력하세요.</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="password" name="password" class="form-control" id="floatingpassword" placeholder="Password">
+                        <label for="floatingpassword">"Password"를 입력하세요.</label>
+                    </div>
+                    <br/>
+                    <button type="submit" class="btn btn-primary" value="login">
+                        로그인
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="location='/user/signForm'"  value="회원가입">
+                        회원가입
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="location='/user/idpsCheck'"  value="아이디 비밀번호 찾기">
+                        아이디&nbsp;/&nbsp; 비밀번호 찾기
+                    </button>
+
+                </div>
+                <div class="col-md-4">
+                </div>
+            </div>
+
+
+
+
+        </div>
+    </div>
+
+
+
+</form>
+</body>
+</html>

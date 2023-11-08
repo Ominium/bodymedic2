@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>약국 검색</title>
+    <style>
+        .label {margin-bottom: 96px;}
+        .label * {display: inline-block;vertical-align: top;}
+        .label .left {background: url("https://t1.daumcdn.net/localimg/localimages/07/2011/map/storeview/tip_l.png") no-repeat;display: inline-block;height: 24px;overflow: hidden;vertical-align: top;width: 7px;}
+        .label .center {background: url(https://t1.daumcdn.net/localimg/localimages/07/2011/map/storeview/tip_bg.png) repeat-x;display: inline-block;height: 24px;font-size: 12px;line-height: 24px;}
+        .label .right {background: url("https://t1.daumcdn.net/localimg/localimages/07/2011/map/storeview/tip_r.png") -1px 0  no-repeat;display: inline-block;height: 24px;overflow: hidden;width: 6px;}
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+</head>
+<body>
+<link rel="stylesheet" href="/css/table.css"/>
+<script type="text/javascript" src="/js/jquery-3.6.0.min.js"></script>
+<!-- Channel Plugin Scripts -->
+<script>
+    (function() {
+        var w = window;
+        if (w.ChannelIO) {
+            return (window.console.error || window.console.log || function(){})('ChannelIO script included twice.');
+        }
+        var ch = function() {
+            ch.c(arguments);
+        };
+        ch.q = [];
+        ch.c = function(args) {
+            ch.q.push(args);
+        };
+        w.ChannelIO = ch;
+        function l() {
+            if (w.ChannelIOInitialized) {
+                return;
+            }
+            w.ChannelIOInitialized = true;
+            var s = document.createElement('script');
+            s.type = 'text/javascript';
+            s.async = true;
+            s.src = 'https://cdn.channel.io/plugin/ch-plugin-web.js';
+            s.charset = 'UTF-8';
+            var x = document.getElementsByTagName('script')[0];
+            x.parentNode.insertBefore(s, x);
+        }
+        if (document.readyState === 'complete') {
+            l();
+        } else if (window.attachEvent) {
+            window.attachEvent('onload', l);
+        } else {
+            window.addEventListener('DOMContentLoaded', l, false);
+            window.addEventListener('load', l, false);
+        }
+    })();
+    ChannelIO('boot', {
+        "pluginKey": "235cd768-4afe-4ebc-bcd1-e7448b26e366"
+    });
+</script>
+<!-- End Channel Plugin -->
+<h2>api 호출 테스트</h2>
+
+
+<div class="container" style="height: 150px">
+    <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+            <div class="btn-group" role="group" aria-label="Basic outlined example">
+
+                <input type="button" class="btn btn-outline-primary" value="로그인"
+                       th:if="${session.SS_USER_ID==null}"    onclick="location.href='/user/LoginForm'">
+
+                <input type="button" class="btn btn-outline-primary" value="회원가입"
+                       th:if="${session.SS_USER_ID==null}"    onclick="location.href='/user/UserRegForm'">
+
+                <input type="button" class="btn btn-outline-primary" value="커뮤니티"
+                       onclick="location.href='/notice/noticeList'">
+
+                <input type="button" class="btn btn-outline-primary" value="로그아웃"
+                       th:if="${session.SS_USER_ID!=null}"   onclick="location.href='/user/logOut'">
+
+                <input type="button" class="btn btn-outline-primary" value="메인 페이지"
+                       onclick="location.href='/main/mainPage'">
+                <input type="button" class="btn btn-outline-primary" value="마이 페이지"
+                       onclick="location.href='/myPage/myPage'">
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<hr/>
+<br/><br/>
+
+<div id="map" style="width:500px;height:400px;"></div>
+<br/>
+<br/>
+
+
+
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=38ea2f6a8379e4f43ece2bc4545a4ddf"></script>
+<script>
+
+    function PosMap(){
+        $.ajax({ // Ajax 호출
+            url: "/main/disapi",
+            type: "get", // 전송방식은 Post
+            dataType: "json", // 전송 결과는 JSON으로 받기
+            success: function (json) { //
+                let xPoses = [];
+                let yPoses = [];
+                let title = [];
+                let lat,lon;
+                console.log(json);
+                const list = json.response.body.items.item
+                for(let obj of list){
+                    xPoses.push(obj.XPos);
+                    yPoses.push(obj.YPos);
+                    title.push(obj.yadmNm);
+                }
+                var mapContainer = document.getElementById('map'), // 지도를 표시할 div
+                    mapOption = {
+                        center: new kakao.maps.LatLng(37.2461191
+                            , 127.055503
+                        ), // 지도의 중심좌표
+                        level: 3 // 지도의 확대 레벨
+                    };
+                if (navigator.geolocation) {
+                    // GeoLocation을 이용해서 접속 위치를 얻어옵니다
+                    navigator.geolocation.getCurrentPosition(function(position) {
+
+                        lat = position.coords.latitude; // 위도
+                        lon = position.coords.longitude; // 경도
+
+                        var locPosition = new kakao.maps.LatLng(lat, lon), // 마커가 표시될 위치를 geolocation으로 얻어온 좌표로 생성합니다
+                            message = '<div style="padding:5px;">여기에 계신가요?!</div>'; // 인포윈도우에 표시될 내용입니다
+
+                        // 마커와 인포윈도우를 표시합니다
+                        displayMarker(locPosition, message);
+
+                    });
+
+                } else { // HTML5의 GeoLocation을 사용할 수 없을때 마커 표시 위치와 인포윈도우 내용을 설정합니다
+
+                    var locPosition = new kakao.maps.LatLng(37.2461191
+                            , 127.055503),
+                        message = 'geolocation을 사용할수 없어요..'
+
+                    displayMarker(locPosition, message);
+                }
+                var imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png";
+                var map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
+                function getDistanceFromLatLonInKm(lat1,lng1,lat2,lng2) {
+
+                    function deg2rad(deg) {
+                        return deg * (Math.PI/180)
+                    }
+
+                    var R = 6371; // Radius of the earth in km
+                    var dLat = deg2rad(lat2-lat1);  // deg2rad below
+                    var dLon = deg2rad(lng2-lng1);
+                    var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);
+                    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                    var d = R * c; // Distance in km
+
+                    return d.toFixed(2) + "km";
+                }
+                function displayMarker(locPosition, message) {
+
+                    // 마커를 생성합니다
+                    var marker2 = new kakao.maps.Marker({
+                        map: map,
+                        position: locPosition
+                    });
+
+                    var iwContent = message, // 인포윈도우에 표시할 내용
+                        iwRemoveable = true;
+
+                    // 인포윈도우를 생성합니다
+                    var infowindow = new kakao.maps.InfoWindow({
+                        content : iwContent,
+                        removable : iwRemoveable
+                    });
+
+                    // 인포윈도우를 마커위에 표시합니다
+                    infowindow.open(map, marker2);
+
+                    // 지도 중심좌표를 접속위치로 변경합니다
+                    map.setCenter(locPosition);
+
+                    return locPosition;
+                }
+
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var imageSize = new kakao.maps.Size(24, 35);
+                    // 마커 이미지를 생성합니다
+                    var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+                    lat = position.coords.latitude; // 위도
+                    lon = position.coords.longitude; // 경도
+                    for (var i = 0; i < xPoses.length; i++) {
+                        var locPosition = new kakao.maps.LatLng(lat, lon), // 마커가 표시될 위치를 geolocation으로 얻어온 좌표로 생성합니다
+                            message = '<div class ="label"><span class="left"></span><span class="center">'+title[i]+'&nbsp&nbsp'+getDistanceFromLatLonInKm(yPoses[i], xPoses[i], lat, lon)+'</span><span class="right"></span></div>'; // 인포윈도우에 표시될 내용입니다
+
+                        var marker = new kakao.maps.Marker({
+                            map: map, // 마커를 표시할 지도
+                            position: new kakao.maps.LatLng(yPoses[i],xPoses[i]), // 마커를 표시할 위치
+                            title :  title[i], // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+                            image : markerImage // 마커 이미지
+                        });
+                        // 마커와 인포윈도우를 표시합니다
+                        var customOverlay = new kakao.maps.CustomOverlay({
+                            position: new kakao.maps.LatLng(yPoses[i],xPoses[i]),
+                            content: message
+                        });
+                        customOverlay.setMap(map);
+                    }
+                    // 인포윈도우를 마커위에 표시합니다
+
+                })
+            },error:function () {
+                console.log("실패하셨습니다");
+            }
+        })
+    }
+    PosMap();
+
+
+    // 마커가 지도 위에 표시되도록 설정합니다
+
+
+    // 아래 코드는 지도 위의 마커를 제거하는 코드입니다
+    // marker.setMap(null);
+</script>
+</body>
+</html>

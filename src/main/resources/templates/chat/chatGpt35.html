@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ai 상담 서비스</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/table.css"/>
+    <link rel="stylesheet" href="/css/style.css"/>
+    <script type="text/javascript" src="/js/jquery-3.6.0.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const session_user_id = [[${session.SS_USER_ID}]]; // Controller에서 받은 세션에 저장된 값
+
+        /*]]>*/
+    </script>
+    <!-- Channel Plugin Scripts -->
+    <script>
+        (function() {
+            var w = window;
+            if (w.ChannelIO) {
+                return (window.console.error || window.console.log || function(){})('ChannelIO script included twice.');
+            }
+            var ch = function() {
+                ch.c(arguments);
+            };
+            ch.q = [];
+            ch.c = function(args) {
+                ch.q.push(args);
+            };
+            w.ChannelIO = ch;
+            function l() {
+                if (w.ChannelIOInitialized) {
+                    return;
+                }
+                w.ChannelIOInitialized = true;
+                var s = document.createElement('script');
+                s.type = 'text/javascript';
+                s.async = true;
+                s.src = 'https://cdn.channel.io/plugin/ch-plugin-web.js';
+                s.charset = 'UTF-8';
+                var x = document.getElementsByTagName('script')[0];
+                x.parentNode.insertBefore(s, x);
+            }
+            if (document.readyState === 'complete') {
+                l();
+            } else if (window.attachEvent) {
+                window.attachEvent('onload', l);
+            } else {
+                window.addEventListener('DOMContentLoaded', l, false);
+                window.addEventListener('load', l, false);
+            }
+        })();
+        ChannelIO('boot', {
+            "pluginKey": "235cd768-4afe-4ebc-bcd1-e7448b26e366"
+        });
+    </script>
+    <!-- End Channel Plugin -->
+    <script type="text/javascript">
+
+        // HTML로딩이 완료되고, 실행됨
+        $(document).ready(function () {
+
+            // 버튼 클릭했을때, 발생되는 이벤트 생성함(onclick 이벤트와 동일함)
+            $("#btnSend").on("click", function () {
+                let Symptom =["뇌","심장","맹장","피부"]
+                if(session_user_id ==null||session_user_id ===""){
+                    alert("로그인 후 이용 가능합니다.");
+                }else {
+                    $.ajax({ // Ajax 호출
+                        url: "/chat/Gpt35",
+                        type: "post", // 전송방식은 Post
+                        data: $("#f").serialize(), // form 태그 내 input 등 객체를 자동으로 전송할 형태로 변경하기
+                        dataType: "JSON", // 전송 결과는 JSON으로 받기
+                        success: function (json) {
+                            let text = json.result;
+                            for (let i = 0; i < Symptom.length; i++) {
+                                if (text.indexOf(Symptom[i]) > 0) {
+                                    window.location.href = '/main/mainSymptomSearch?part=' + Symptom[i];
+                                }
+                            }
+
+                            console.log(json);// /melon/getSongList 호출이 성공했다면..
+                            $("#gptResult").append("<div class=\"divTableRow\">");
+                            $("#gptResult").append("<div class=\"divTableCell\">질문 : " + json.message + "</div>");
+                            $("#gptResult").append("</div>");
+
+                            $("#gptResult").append("<div class=\"divTableRow\">");
+                            $("#gptResult").append("<div class=\"divTableCell\">" + json.result + "</div>");
+                            $("#gptResult").append("</div>");
+                        }
+
+                    })
+
+                }
+            })
+        })
+    </script>
+</head>
+<body>
+<nav class="navbar">
+
+    <div class="navbar__logo">
+        <i class="fas fa-blog"></i>
+        <a href="/main/mainPage">Body Medic</a>
+    </div>
+
+    <ul class="navbar__menu">
+        <li><a href="/main/mainPage">Main</a></li>
+        <li><a href="/main/mainDiseaseSearch">Search</a></li>
+        <li><a href="/notice/noticeList">Notice</a></li>
+        <li><a href="/chat/chatGpt35">AI Search</a></li>>
+        <li><a href="/user/logOut"  th:if="${session.SS_USER_ID!=null}">LogOut</a></li>>
+        <li><a href="/myPage/myPage"  th:if="${session.SS_USER_ID!=null}">My Page</a></li>>
+        <li><a href="/user/loginPage"  th:if="${session.SS_USER_ID==null}">Login</a></li>>
+        <li><a href="/user/signForm" th:if="${session.SS_USER_ID==null}">Sign</a></li>>
+    </ul>
+
+
+</nav>
+
+<hr/>
+<br/><br/>
+<form name="f" id="f">
+    <div class="divTable minimalistBlack">
+        <div class="divTableBody">
+            <div class="divTableRow">
+                <div class="divTableCell" style="width: 30%">어디가 아프신가요?</div>
+                <div class="divTableCell" style="width: 70%"><input type="text" name="content" style="width: 70%"></div>
+
+            </div>
+            <button id="btnSend"  type="button">AI 상담받기</button>
+        </div>
+
+    </div>
+
+</form>
+<br/>
+<div>
+    상담 결과는 마이 페이지에 자동으로 저장됩니다.
+</div>
+<br/>
+
+<div class="divTable minimalistBlack">
+    <div class="divTableHeading">
+        <div class="divTableRow">
+            <div class="divTableHead">상담결과</div>
+        </div>
+    </div>
+    <div class="divTableBody" id="gptResult">
+        <div class="divTableRow">
+        </div>
+    </div>
+</div>
+
+
+</div>
+</body>
+</html>

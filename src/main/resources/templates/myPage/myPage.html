@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>마이 페이지</title>
+    <script type="text/javascript" src="/js/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css"/>
+    <link rel="stylesheet" href="/css/table.css"/>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const session_user_id = [[${session.SS_USER_ID}]]; // Controller에서 받은 세션에 저장된 값
+
+        /*]]>*/
+    </script>
+
+    <!-- Channel Plugin Scripts -->
+    <script>
+        (function() {
+            var w = window;
+            if (w.ChannelIO) {
+                return (window.console.error || window.console.log || function(){})('ChannelIO script included twice.');
+            }
+            var ch = function() {
+                ch.c(arguments);
+            };
+            ch.q = [];
+            ch.c = function(args) {
+                ch.q.push(args);
+            };
+            w.ChannelIO = ch;
+            function l() {
+                if (w.ChannelIOInitialized) {
+                    return;
+                }
+                w.ChannelIOInitialized = true;
+                var s = document.createElement('script');
+                s.type = 'text/javascript';
+                s.async = true;
+                s.src = 'https://cdn.channel.io/plugin/ch-plugin-web.js';
+                s.charset = 'UTF-8';
+                var x = document.getElementsByTagName('script')[0];
+                x.parentNode.insertBefore(s, x);
+            }
+            if (document.readyState === 'complete') {
+                l();
+            } else if (window.attachEvent) {
+                window.attachEvent('onload', l);
+            } else {
+                window.addEventListener('DOMContentLoaded', l, false);
+                window.addEventListener('load', l, false);
+            }
+        })();
+        ChannelIO('boot', {
+            "pluginKey": "235cd768-4afe-4ebc-bcd1-e7448b26e366"
+        });
+    </script>
+    <!-- End Channel Plugin -->
+</head>
+<body>
+<nav class="navbar">
+
+    <div class="navbar__logo">
+        <i class="fas fa-blog"></i>
+        <a href="/main/mainPage">Body Medic</a>
+    </div>
+
+    <ul class="navbar__menu">
+        <li><a href="/main/mainPage">Main</a></li>
+        <li><a href="/main/mainDiseaseSearch">Search</a></li>
+        <li><a href="/notice/noticeList">Notice</a></li>
+        <li><a href="/chat/chatGpt35">AI Search</a></li>>
+        <li><a href="/user/logOut"  th:if="${session.SS_USER_ID!=null}">LogOut</a></li>>
+        <li><a href="/myPage/myPage"  th:if="${session.SS_USER_ID!=null}">My Page</a></li>>
+        <li><a href="/user/loginPage"  th:if="${session.SS_USER_ID==null}">Login</a></li>>
+        <li><a href="/user/signForm" th:if="${session.SS_USER_ID==null}">Sign</a></li>>
+    </ul>
+
+
+</nav>
+<div class = "divTable">
+    <div class="divTableHeading">
+        <div class="divTableHead" >유저 아이디</div>
+        <div class="divTableHead">유저 이름</div>
+        <div class="divTableHead">유저 이메일</div>
+    </div>
+    <div class="divTableBody">
+        <div class="divTableCell" th:text="${rDTO.getUser_id()}" ></div>
+        <div class="divTableCell" th:text="${rDTO.getUser_name()}"></div>
+        <div class="divTableCell" th:text="${rDTO.getEmail()}" ></div>
+    </div>
+    </div>
+<div>
+    <button id="userDelete" >회원탈퇴</button>
+    <button onclick="location.href='myPassword'">비밀번호 변경하기</button>
+</div>
+<div class = "divTable">
+    <div class="divTableBody">
+        <div class="divTableRow" th:each="fav: ${fDTO.getFavorite()}">
+            <div class="divTableCell"  > <a  th:text="${fav}" th:href="@{/main/mainDiseaseSearch(itemName=${fav})}" onclick=""></a></div>
+            <button class="deleteFev divTableCell" th:value="${fav}">즐겨찾기 삭제</button>
+
+        </div>
+    </div>
+</div>
+    <div class = "divTable">
+    <div class="divTableBody">
+        <div class="divTableRow" th:each="con: ${fDTO.getConsult()}">
+            <div class="divTableCell" th:text="${con}" ></div>
+            <button class="deleteCon divTableCell" th:value="${con}">상담 내역 삭제</button>
+
+        </div>
+
+
+    </div>
+</div>
+
+
+
+
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $(".deleteFev").click(clickvalue);
+        $(".deleteCon").click(clickvalue2);
+        $("#userDelete").click(userDelete);
+        function clickvalue(){
+            let value = this.value;
+            deleteFev(value);
+        }
+        function clickvalue2(){
+            let value = this.value;
+            deleteCon(value);
+        }
+        function userDelete(){
+            $.ajax({
+                url: "/myPage/userDelete",
+                type: "post", // 전송방식은 Post
+                dataType: "text", // 전송 결과는 JSON으로 받기
+                data:{user_id:session_user_id},
+                success: function (text) { //
+                    alert(text);
+                   location.href="/main/mainPage";
+                },
+                error:function (text){
+                    alert(text)
+                }
+            })
+
+        }
+        function deleteFev(value){
+            console.log(session_user_id);
+            console.log(value);
+            $.ajax({
+                url: "/myPage/deleteFav",
+                type: "post", // 전송방식은 Post
+                dataType: "text", // 전송 결과는 JSON으로 받기
+                data:{user_id:session_user_id,favorite:value},
+                success: function (text) { //
+                    alert(text);
+                    location.reload();
+                },
+                error:function (text){
+                    alert(text)
+                }
+            })
+        }
+        function deleteCon(value){
+            console.log(session_user_id);
+            console.log(value);
+            $.ajax({
+                url: "/myPage/deleteCon",
+                type: "post", // 전송방식은 Post
+                dataType: "text", // 전송 결과는 JSON으로 받기
+                data:{user_id:session_user_id,favorite:value},
+                success: function (text) { //
+                    alert(text);
+                    location.reload();
+                },
+                error:function (text){
+                    alert(text)
+                }
+            })
+        }
+
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="medic.bodymedic.persistence.mapper.ISymptomMapper">
+
+    <select id="symptomSearch" resultType="SymptomDTO" parameterType="SymptomDTO">
+        SELECT *
+        FROM SYMPTOM
+        WHERE PART = #{part}
+        ORDER BY SYMPTOM_SEQ desc
+        LIMIT #{start},10
+    </select>
+    <select id="symptomCount" parameterType="SymptomDTO" resultType="int">
+        SELECT COUNT(*)
+        FROM SYMPTOM
+        WHERE PART = #{part}
+    </select>
+</mapper>
